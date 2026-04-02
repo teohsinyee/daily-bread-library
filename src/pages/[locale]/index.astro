@@ -1,10 +1,17 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import ArticleCard from "../../components/ArticleCard.astro";
 import QuoteCard from "../../components/QuoteCard.astro";
 import SearchPanel from "../../components/SearchPanel.astro";
 import SermonCard from "../../components/SermonCard.astro";
 import { localeLabels, type SiteLocale, withBase } from "../../config/site";
-import { buildSearchItems, getFeaturedQuotes, getSermonsByLocale, getThemeGroups } from "../../lib/content";
+import {
+  buildSearchItems,
+  getArticlesByLocale,
+  getFeaturedQuotes,
+  getSermonsByLocale,
+  getThemeGroups
+} from "../../lib/content";
 
 export async function getStaticPaths() {
   return [
@@ -15,6 +22,7 @@ export async function getStaticPaths() {
 
 const locale = Astro.params.locale as SiteLocale;
 const sermons = await getSermonsByLocale(locale);
+const articles = await getArticlesByLocale(locale);
 const quotes = getFeaturedQuotes(sermons).slice(0, 4);
 const topics = getThemeGroups(sermons);
 const labels =
@@ -27,9 +35,11 @@ const labels =
         lead: "这里整理公开可分享的讲章笔记、主题、经文与回应，帮助人继续默想、祷告、讨论与成长。",
         themeHeading: "按主题进入",
         sermonHeading: "最新讲章",
+        articleHeading: "导读文章",
         quoteHeading: "值得记住的句子",
         browseTopics: "查看所有主题",
-        browseSermons: "查看所有讲章"
+        browseSermons: "查看所有讲章",
+        browseArticles: "查看所有导读"
       }
     : {
         title: "Home",
@@ -39,9 +49,11 @@ const labels =
         lead: "This public library gathers sermon notes, themes, scriptures, and reflections so people can keep meditating, praying, discussing, and growing.",
         themeHeading: "Browse by theme",
         sermonHeading: "Recent sermons",
+        articleHeading: "Reading guides",
         quoteHeading: "Lines worth carrying with you",
         browseTopics: "View all topics",
-        browseSermons: "View all sermons"
+        browseSermons: "View all sermons",
+        browseArticles: "View all guides"
       };
 ---
 
@@ -68,7 +80,7 @@ const labels =
     </div>
   </section>
 
-  <SearchPanel locale={locale} items={buildSearchItems(sermons)} />
+  <SearchPanel locale={locale} items={buildSearchItems(sermons, articles)} />
 
   <section class="section-grid">
     <div class="section-heading">
@@ -94,6 +106,21 @@ const labels =
       {sermons.map((sermon) => <SermonCard sermon={sermon} />)}
     </div>
   </section>
+
+  {articles.length > 0 && (
+    <section class="section-grid">
+      <div class="section-heading">
+        <p class="eyebrow">{labels.articleHeading}</p>
+        <h2>{locale === "zh" ? "当原文太重时，先让中文导读扶你一把" : "Guides for when the original resource feels too heavy to enter first"}</h2>
+      </div>
+      <div class="grid grid--two">
+        {articles.slice(0, 2).map((article) => <ArticleCard article={article} />)}
+      </div>
+      <div class="cta-row">
+        <a class="button button--ghost" href={withBase(`/${locale}/articles/`)}>{labels.browseArticles}</a>
+      </div>
+    </section>
+  )}
 
   <section class="section-grid">
     <div class="section-heading">

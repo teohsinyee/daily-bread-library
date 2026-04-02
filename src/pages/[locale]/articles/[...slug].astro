@@ -1,0 +1,89 @@
+---
+import { render } from "astro:content";
+import GiscusComments from "../../../components/GiscusComments.astro";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { type SiteLocale } from "../../../config/site";
+import { formatDate, getAllArticles, type ArticleEntry } from "../../../lib/content";
+
+export async function getStaticPaths() {
+  const articles = await getAllArticles();
+
+  return articles.map((article: ArticleEntry) => {
+    const [locale, ...rest] = article.id.split("/").filter(Boolean);
+    return {
+      params: {
+        locale,
+        slug: rest.join("/")
+      },
+      props: {
+        article
+      }
+    };
+  });
+}
+
+const { article } = Astro.props as { article: ArticleEntry };
+const locale = article.data.locale as SiteLocale;
+const { Content } = await render(article);
+---
+
+<BaseLayout title={article.data.title} description={article.data.summary} locale={locale}>
+  <article class="sermon-page">
+    <section class="hero hero--sermon">
+      <div class="hero__copy">
+        <p class="eyebrow">{locale === "zh" ? "导读文章" : "Reading guide"}</p>
+        <h1>{article.data.title}</h1>
+        <p class="hero__lead">{article.data.summary}</p>
+        <div class="sermon-meta">
+          <span>{formatDate(article.data.date, locale)}</span>
+          <span>{article.data.sourceNote}</span>
+        </div>
+      </div>
+
+      <aside class="hero__aside card">
+        <p class="eyebrow">{locale === "zh" ? "核心句子" : "Anchor line"}</p>
+        <blockquote class="hero-quote">{article.data.heroLine}</blockquote>
+      </aside>
+    </section>
+
+    <section class="content-grid">
+      <div class="content-grid__main prose-block">
+        <Content />
+      </div>
+
+      <aside class="content-grid__aside">
+        <div class="card sticky-card">
+          <p class="eyebrow">{locale === "zh" ? "主题" : "Themes"}</p>
+          <ul class="chip-list">
+            {article.data.themes.map((theme: string) => <li>{theme}</li>)}
+          </ul>
+        </div>
+
+        <div class="card">
+          <p class="eyebrow">{locale === "zh" ? "原始资源" : "Sources"}</p>
+          <ul class="stack-list">
+            {article.data.sources.map((source) => (
+              <li>
+                <a class="text-link" href={source.url} target="_blank" rel="noreferrer">
+                  {source.title}
+                </a>
+                <div class="muted">{[source.author, source.publisher].filter(Boolean).join(" · ")}</div>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div class="card">
+          <p class="eyebrow">{locale === "zh" ? "阅读说明" : "Guide note"}</p>
+          <p>
+            {locale === "zh"
+              ? "本页是中文导读与整理，不是原文逐字翻译。目标是帮助你先抓住核心负担，再回头读原始英文内容。"
+              : "This page is a guide, not a line-by-line translation. It is meant to help readers grasp the core burden before returning to the original resource."}
+          </p>
+        </div>
+      </aside>
+    </section>
+
+    <GiscusComments term={article.data.commentTerm} locale={locale} />
+  </article>
+</BaseLayout>

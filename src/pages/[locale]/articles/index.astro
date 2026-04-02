@@ -1,0 +1,77 @@
+---
+import ArticleCard from "../../../components/ArticleCard.astro";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { type SiteLocale } from "../../../config/site";
+import { getArticlesByLocale } from "../../../lib/content";
+
+export async function getStaticPaths() {
+  return [
+    { params: { locale: "en" } },
+    { params: { locale: "zh" } }
+  ];
+}
+
+const locale = Astro.params.locale as SiteLocale;
+const articles = await getArticlesByLocale(locale);
+const labels =
+  locale === "zh"
+    ? {
+        title: "导读文章",
+        description: "把值得读的英文讲章与文章整理成中文导读，帮助你先抓住属灵重点。",
+        eyebrow: "导读文章",
+        heading: "先用中文抓住重点，再慢慢读原文。",
+        lead:
+          "这里收录的是导读与整理，不是逐字翻译。目标不是取代原文，而是先帮助你在祷告和默想中抓住真正重要的属灵中心。",
+        emptyHeading: "导读文章正在整理中",
+        emptyBody: "中文导读会先发布在这里，之后再补更多英文和双语资源。"
+      }
+    : {
+        title: "Reading Guides",
+        description: "Guides that help readers enter longer resources with clarity and spiritual focus.",
+        eyebrow: "Reading Guides",
+        heading: "Start with a guide when the original resource feels heavy.",
+        lead:
+          "These pages are curated guides, not full translations. They are meant to help readers enter deeper articles and talks with clarity, prayer, and better spiritual focus.",
+        emptyHeading: "Guides are still being prepared",
+        emptyBody: "Chinese reading guides are live first. More English and bilingual guides can be added as the library grows."
+      };
+---
+
+<BaseLayout title={labels.title} description={labels.description} locale={locale}>
+  <section class="hero">
+    <div class="hero__copy">
+      <p class="eyebrow">{labels.eyebrow}</p>
+      <h1>{labels.heading}</h1>
+      <p class="hero__lead">{labels.lead}</p>
+    </div>
+
+    <div class="hero__aside card">
+      <p class="eyebrow">{locale === "zh" ? "说明" : "Note"}</p>
+      <p>
+        {locale === "zh"
+          ? "这些页面特别适合想读英文资源、却需要先有中文抓手的人。"
+          : "These guides are especially useful when you want the benefit of English resources but need a clearer first entry point."}
+      </p>
+    </div>
+  </section>
+
+  {articles.length > 0 ? (
+    <section class="section-grid">
+      <div class="section-heading">
+        <p class="eyebrow">{locale === "zh" ? "最近导读" : "Recent guides"}</p>
+        <h2>{locale === "zh" ? "先读那些真正能托住你心的内容" : "Start with the resources most likely to steady your heart"}</h2>
+      </div>
+      <div class="grid grid--two">
+        {articles.map((article) => <ArticleCard article={article} />)}
+      </div>
+    </section>
+  ) : (
+    <section class="section-grid">
+      <div class="card">
+        <p class="eyebrow">{locale === "zh" ? "稍后回来" : "Check back soon"}</p>
+        <h2>{labels.emptyHeading}</h2>
+        <p>{labels.emptyBody}</p>
+      </div>
+    </section>
+  )}
+</BaseLayout>

@@ -9,6 +9,7 @@ const labels = {
   en: {
     home: "Home",
     sermons: "Sermons",
+    articles: "Guides",
     topics: "Topics",
     quotes: "Quotes",
     chinese: "中文"
@@ -16,6 +17,7 @@ const labels = {
   zh: {
     home: "首页",
     sermons: "讲章",
+    articles: "导读",
     topics: "主题",
     quotes: "金句",
     chinese: "English"
@@ -36,6 +38,7 @@ const labels = {
     <nav class="site-nav" aria-label="Primary">
       <a href={`${base}${locale}/`}>{labels[locale].home}</a>
       <a href={`${base}${locale}/sermons/`}>{labels[locale].sermons}</a>
+      <a href={`${base}${locale}/articles/`}>{labels[locale].articles}</a>
       <a href={`${base}${locale}/topics/`}>{labels[locale].topics}</a>
       <a href={`${base}${locale}/quotes/`}>{labels[locale].quotes}</a>
     </nav>
