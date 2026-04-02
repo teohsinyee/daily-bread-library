@@ -4,7 +4,7 @@ export const siteConfig = {
   repo: "teohsinyee/daily-bread-library",
   repoId: "R_kgDOR3kTrg",
   discussionCategory: "Page Comments",
-  discussionCategoryId: "",
+  discussionCategoryId: "DIC_kwDOR3kTrs4C52dV",
   baseUrl: "https://teohsinyee.github.io/daily-bread-library",
   locales: ["en", "zh"] as const
 };
