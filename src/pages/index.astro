@@ -1,0 +1,100 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import QuoteCard from "../components/QuoteCard.astro";
+import SermonCard from "../components/SermonCard.astro";
+import { localeLabels, siteConfig, withBase } from "../config/site";
+import { getAllSermons, getFeaturedQuotes, getThemeGroups } from "../lib/content";
+
+const sermons = await getAllSermons();
+const featuredEnglish = sermons.filter((entry) => entry.data.locale === "en").slice(0, 2);
+const featuredQuotes = getFeaturedQuotes(sermons.filter((entry) => entry.data.locale === "en")).slice(0, 3);
+const topics = getThemeGroups(sermons.filter((entry) => entry.data.locale === "en")).slice(0, 6);
+---
+
+<BaseLayout
+  title="Home"
+  description="A public Christian library of sermon notes, memorable lines, themes, and reflections."
+>
+  <section class="hero hero--landing">
+    <div class="hero__copy">
+      <p class="eyebrow">Public Christian Knowledge Base</p>
+      <h1>Daily bread for people who want truth they can carry into real life.</h1>
+      <p class="hero__lead">
+        {siteConfig.siteName} is a public library of sermon notes, memorable lines, topic pages, and
+        prayerful reflections built to nourish believers and welcome conversation.
+      </p>
+      <div class="cta-row">
+        <a class="button" href={withBase("/en/")}>Enter in English</a>
+        <a class="button button--ghost" href={withBase("/zh/")}>进入中文</a>
+      </div>
+    </div>
+
+    <div class="hero__aside card">
+      <p class="eyebrow">What you will find here</p>
+      <ul class="feature-list">
+        <li>Topic-first browsing across calling, obedience, identity, and more</li>
+        <li>Curated memorable lines instead of raw transcript dumping</li>
+        <li>GitHub Discussions-powered page comments for fellowship and response</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section-grid">
+    <div class="section-heading">
+      <p class="eyebrow">Languages</p>
+      <h2>Choose your reading path</h2>
+    </div>
+    <div class="grid grid--two">
+      {siteConfig.locales.map((locale) => (
+        <a class="card language-card" href={withBase(`/${locale}/`)}>
+          <strong>{localeLabels[locale]}</strong>
+          <span>{locale === "zh" ? "中文内容与属灵笔记" : "English notes, themes, and quotes"}</span>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <section class="section-grid">
+    <div class="section-heading">
+      <p class="eyebrow">Featured Themes</p>
+      <h2>Begin with the burden, not just the date</h2>
+    </div>
+    <div class="grid grid--three">
+      {topics.map((topic) => (
+        <a class="card topic-card" href={withBase(`/en/topics/${topic.slug}/`)}>
+          <strong>{topic.label}</strong>
+          <span>{topic.count} sermon{topic.count === 1 ? "" : "s"}</span>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <section class="section-grid">
+    <div class="section-heading">
+      <p class="eyebrow">Seed Sermons</p>
+      <h2>The library starts with one message, but it is built to grow.</h2>
+    </div>
+    <div class="grid grid--two">
+      {featuredEnglish.map((sermon) => <SermonCard sermon={sermon} />)}
+    </div>
+  </section>
+
+  <section class="section-grid">
+    <div class="section-heading">
+      <p class="eyebrow">Memorable Lines</p>
+      <h2>Short lines that stay with you after the sermon ends</h2>
+    </div>
+    <div class="grid grid--three">
+      {featuredQuotes.map(({ quote, sermon, url }) => (
+        <QuoteCard
+          text={quote.text}
+          note={quote.note}
+          href={url}
+          speaker={sermon.data.speaker}
+          sermonTitle={sermon.data.title}
+          status={quote.status}
+        />
+      ))}
+    </div>
+  </section>
+</BaseLayout>

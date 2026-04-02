@@ -1,0 +1,46 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import QuoteCard from "../../../components/QuoteCard.astro";
+import type { SiteLocale } from "../../../config/site";
+import { getFeaturedQuotes, getSermonsByLocale } from "../../../lib/content";
+
+export async function getStaticPaths() {
+  return [
+    { params: { locale: "en" } },
+    { params: { locale: "zh" } }
+  ];
+}
+
+const locale = Astro.params.locale as SiteLocale;
+const sermons = await getSermonsByLocale(locale);
+const quotes = getFeaturedQuotes(sermons);
+---
+
+<BaseLayout
+  title={locale === "zh" ? "金句" : "Quotes"}
+  description={locale === "zh" ? "可继续默想的讲章短句。" : "Memorable sermon lines worth revisiting."}
+  locale={locale}
+>
+  <section class="page-intro">
+    <p class="eyebrow">{locale === "zh" ? "金句库" : "Quote Library"}</p>
+    <h1>{locale === "zh" ? "值得带进祷告的短句" : "Short lines to carry into prayer"}</h1>
+    <p>
+      {locale === "zh"
+        ? "每一句都连回原讲章页面，好让读者继续回到完整上下文。"
+        : "Every quote links back to its sermon page so readers can move from a line into the fuller context."}
+    </p>
+  </section>
+
+  <div class="grid grid--two">
+    {quotes.map(({ quote, sermon, url }) => (
+      <QuoteCard
+        text={quote.text}
+        note={quote.note}
+        href={url}
+        speaker={sermon.data.speaker}
+        sermonTitle={sermon.data.title}
+        status={quote.status}
+      />
+    ))}
+  </div>
+</BaseLayout>

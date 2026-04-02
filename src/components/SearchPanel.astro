@@ -1,0 +1,83 @@
+---
+interface SearchItem {
+  kind: string;
+  title: string;
+  excerpt: string;
+  meta: string;
+  url: string;
+  terms: string[];
+}
+
+interface Props {
+  locale: "en" | "zh";
+  items: SearchItem[];
+}
+
+const { locale, items } = Astro.props;
+const labels = {
+  en: {
+    heading: "Search the library",
+    placeholder: "Search themes, scriptures, speakers, or quotes",
+    empty: "No results yet. Try another keyword."
+  },
+  zh: {
+    heading: "搜索这座属灵粮仓",
+    placeholder: "搜索主题、经文、讲员或金句",
+    empty: "没有找到结果。试试别的关键词。"
+  }
+} as const;
+const widgetId = `search-panel-${locale}`;
+---
+
+<section class="search-panel" id={widgetId}>
+  <div class="search-panel__header">
+    <p class="eyebrow">{labels[locale].heading}</p>
+    <input type="search" placeholder={labels[locale].placeholder} aria-label={labels[locale].placeholder} />
+  </div>
+
+  <ul class="search-results"></ul>
+
+  <script is:inline define:vars={{ items, widgetId, labels, locale }}>
+    const root = document.getElementById(widgetId);
+    if (root) {
+      const input = root.querySelector("input");
+      const results = root.querySelector(".search-results");
+      const dataset = items.map((item) => ({
+        ...item,
+        haystack: [item.title, item.excerpt, item.meta, ...item.terms].join(" ").toLowerCase()
+      }));
+
+      const render = (query) => {
+        const normalized = query.trim().toLowerCase();
+        const matches = dataset
+          .filter((item) => !normalized || item.haystack.includes(normalized))
+          .slice(0, 8);
+
+        if (!matches.length) {
+          results.innerHTML = `<li class="search-empty">${labels[locale].empty}</li>`;
+          return;
+        }
+
+        results.innerHTML = matches
+          .map(
+            (item) => `
+              <li class="search-result">
+                <a href="${item.url}">
+                  <span class="search-result__kind">${item.kind}</span>
+                  <strong>${item.title}</strong>
+                  <p>${item.excerpt}</p>
+                  <small>${item.meta}</small>
+                </a>
+              </li>
+            `
+          )
+          .join("");
+      };
+
+      render("");
+      input?.addEventListener("input", (event) => {
+        render(event.currentTarget.value);
+      });
+    }
+  </script>
+</section>

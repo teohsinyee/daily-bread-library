@@ -1,0 +1,42 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import SermonCard from "../../../components/SermonCard.astro";
+import type { SiteLocale } from "../../../config/site";
+import { getSermonsByLocale } from "../../../lib/content";
+
+export async function getStaticPaths() {
+  return [
+    { params: { locale: "en" } },
+    { params: { locale: "zh" } }
+  ];
+}
+
+const locale = Astro.params.locale as SiteLocale;
+const sermons = await getSermonsByLocale(locale);
+const labels =
+  locale === "zh"
+    ? {
+        title: "讲章",
+        description: "公开发布的讲章笔记与属灵反思。"
+      }
+    : {
+        title: "Sermons",
+        description: "Public sermon notes and spiritual reflections."
+      };
+---
+
+<BaseLayout title={labels.title} description={labels.description} locale={locale}>
+  <section class="page-intro">
+    <p class="eyebrow">{labels.title}</p>
+    <h1>{locale === "zh" ? "讲章笔记档案" : "Sermon archive"}</h1>
+    <p>
+      {locale === "zh"
+        ? "这里收录的是经过整理、适合公开阅读与继续默想的讲章内容。"
+        : "These are curated sermon notes prepared for public reading, reflection, and discussion."}
+    </p>
+  </section>
+
+  <div class="grid grid--two">
+    {sermons.map((sermon) => <SermonCard sermon={sermon} />)}
+  </div>
+</BaseLayout>

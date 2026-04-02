@@ -1,0 +1,109 @@
+---
+import { render } from "astro:content";
+import GiscusComments from "../../../components/GiscusComments.astro";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { type SiteLocale, withBase } from "../../../config/site";
+import { formatDate, getAllSermons, slugify, type SermonEntry } from "../../../lib/content";
+
+export async function getStaticPaths() {
+  const sermons = await getAllSermons();
+
+  return sermons.map((sermon: SermonEntry) => {
+    const [locale, ...rest] = sermon.id.split("/").filter(Boolean);
+    return {
+      params: {
+        locale,
+        slug: rest.join("/")
+      },
+      props: {
+        sermon
+      }
+    };
+  });
+}
+
+const { sermon } = Astro.props as { sermon: SermonEntry };
+const locale = sermon.data.locale as SiteLocale;
+const { Content } = await render(sermon);
+---
+
+<BaseLayout title={sermon.data.title} description={sermon.data.summary} locale={locale}>
+  <article class="sermon-page">
+    <section class="hero hero--sermon">
+      <div class="hero__copy">
+        <p class="eyebrow">{sermon.data.event}</p>
+        <h1>{sermon.data.title}</h1>
+        <p class="hero__lead">{sermon.data.summary}</p>
+        <div class="sermon-meta">
+          <span>{sermon.data.speaker}</span>
+          <span>{formatDate(sermon.data.date, locale)}</span>
+          <span>{sermon.data.sourceRights}</span>
+        </div>
+      </div>
+
+      <aside class="hero__aside card">
+        <p class="eyebrow">{locale === "zh" ? "核心句子" : "Anchor line"}</p>
+        <blockquote class="hero-quote">{sermon.data.heroLine}</blockquote>
+      </aside>
+    </section>
+
+    <section class="content-grid">
+      <div class="content-grid__main prose-block">
+        <Content />
+      </div>
+
+      <aside class="content-grid__aside">
+        <div class="card sticky-card">
+          <p class="eyebrow">{locale === "zh" ? "主题" : "Themes"}</p>
+          <ul class="chip-list">
+            {sermon.data.themes.map((theme: string) => (
+              <li>
+                <a href={withBase(`/${locale}/topics/${slugify(theme)}/`)}>
+                  {theme}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div class="card">
+          <p class="eyebrow">{locale === "zh" ? "经文" : "Scriptures"}</p>
+          <ul class="stack-list">
+            {sermon.data.scriptures.map((scripture: string) => <li>{scripture}</li>)}
+          </ul>
+        </div>
+
+        <div class="card">
+          <p class="eyebrow">{locale === "zh" ? "引用说明" : "Quote note"}</p>
+          <p>
+            {locale === "zh"
+              ? "本页只发布整理后的讲章笔记与短句摘录，不公开完整第三方逐字稿。"
+              : "This page publishes curated notes and short quotes, not a full third-party transcript."}
+          </p>
+        </div>
+      </aside>
+    </section>
+
+    <section class="section-grid">
+      <div class="section-heading">
+        <p class="eyebrow">{locale === "zh" ? "金句" : "Memorable lines"}</p>
+        <h2>{locale === "zh" ? "值得反复默想的句子" : "Lines worth praying through again"}</h2>
+      </div>
+      <div class="grid grid--two">
+        {sermon.data.quotes.map((quote: SermonEntry["data"]["quotes"][number]) => (
+          <article class="card card--quote">
+            <p class="quote-mark">“</p>
+            <blockquote>{quote.text}</blockquote>
+            {quote.note && <p class="muted">{quote.note}</p>}
+            <p class="quote-meta">
+              <span>{sermon.data.speaker}</span>
+              <span>{quote.status}</span>
+            </p>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <GiscusComments term={sermon.data.commentTerm} locale={locale} />
+  </article>
+</BaseLayout>

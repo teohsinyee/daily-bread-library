@@ -1,0 +1,116 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import QuoteCard from "../../components/QuoteCard.astro";
+import SearchPanel from "../../components/SearchPanel.astro";
+import SermonCard from "../../components/SermonCard.astro";
+import { localeLabels, type SiteLocale, withBase } from "../../config/site";
+import { buildSearchItems, getFeaturedQuotes, getSermonsByLocale, getThemeGroups } from "../../lib/content";
+
+export async function getStaticPaths() {
+  return [
+    { params: { locale: "en" } },
+    { params: { locale: "zh" } }
+  ];
+}
+
+const locale = Astro.params.locale as SiteLocale;
+const sermons = await getSermonsByLocale(locale);
+const quotes = getFeaturedQuotes(sermons).slice(0, 4);
+const topics = getThemeGroups(sermons);
+const labels =
+  locale === "zh"
+    ? {
+        title: "首页",
+        description: "以主题、金句和讲章整理属灵粮食。",
+        eyebrow: "属灵粮仓",
+        heading: "让真理不只停在听见，而是继续停留在心里。",
+        lead: "这里整理公开可分享的讲章笔记、主题、经文与回应，帮助人继续默想、祷告、讨论与成长。",
+        themeHeading: "按主题进入",
+        sermonHeading: "最新讲章",
+        quoteHeading: "值得记住的句子",
+        browseTopics: "查看所有主题",
+        browseSermons: "查看所有讲章"
+      }
+    : {
+        title: "Home",
+        description: "Browse spiritual food by theme, quote, and sermon.",
+        eyebrow: "Daily Bread",
+        heading: "Truth that keeps working in the heart after the meeting ends.",
+        lead: "This public library gathers sermon notes, themes, scriptures, and reflections so people can keep meditating, praying, discussing, and growing.",
+        themeHeading: "Browse by theme",
+        sermonHeading: "Recent sermons",
+        quoteHeading: "Lines worth carrying with you",
+        browseTopics: "View all topics",
+        browseSermons: "View all sermons"
+      };
+---
+
+<BaseLayout title={labels.title} description={labels.description} locale={locale}>
+  <section class="hero">
+    <div class="hero__copy">
+      <p class="eyebrow">{labels.eyebrow} · {localeLabels[locale]}</p>
+      <h1>{labels.heading}</h1>
+      <p class="hero__lead">{labels.lead}</p>
+      <div class="cta-row">
+        <a class="button" href={withBase(`/${locale}/sermons/`)}>{labels.browseSermons}</a>
+        <a class="button button--ghost" href={withBase(`/${locale}/topics/`)}>{labels.browseTopics}</a>
+      </div>
+    </div>
+
+    <div class="hero__aside card">
+      <p class="eyebrow">{locale === "zh" ? "方向" : "Direction"}</p>
+      <h2>{locale === "zh" ? "先看主题，再进到讲章。" : "Start with the burden, then move into the sermon."}</h2>
+      <p>
+        {locale === "zh"
+          ? "这个站点不是单纯的日期档案，而是帮助人从主题、经文和回应中接收属灵供应。"
+          : "This site is not only a chronological archive. It is designed to let people enter by burden, theme, scripture, and response."}
+      </p>
+    </div>
+  </section>
+
+  <SearchPanel locale={locale} items={buildSearchItems(sermons)} />
+
+  <section class="section-grid">
+    <div class="section-heading">
+      <p class="eyebrow">{labels.themeHeading}</p>
+      <h2>{locale === "zh" ? "从神正在触摸的主题开始" : "Enter through the themes God is pressing on hearts"}</h2>
+    </div>
+    <div class="grid grid--three">
+      {topics.map((topic) => (
+        <a class="card topic-card" href={withBase(`/${locale}/topics/${topic.slug}/`)}>
+          <strong>{topic.label}</strong>
+          <span>{topic.count} {locale === "zh" ? "篇信息" : topic.count === 1 ? "sermon" : "sermons"}</span>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <section class="section-grid">
+    <div class="section-heading">
+      <p class="eyebrow">{labels.sermonHeading}</p>
+      <h2>{locale === "zh" ? "公开发布的讲章笔记" : "Curated notes ready for public reading"}</h2>
+    </div>
+    <div class="grid grid--two">
+      {sermons.map((sermon) => <SermonCard sermon={sermon} />)}
+    </div>
+  </section>
+
+  <section class="section-grid">
+    <div class="section-heading">
+      <p class="eyebrow">{labels.quoteHeading}</p>
+      <h2>{locale === "zh" ? "短句也能成为供应" : "Sometimes one line is enough to reopen the heart"}</h2>
+    </div>
+    <div class="grid grid--two">
+      {quotes.map(({ quote, sermon, url }) => (
+        <QuoteCard
+          text={quote.text}
+          note={quote.note}
+          href={url}
+          speaker={sermon.data.speaker}
+          sermonTitle={sermon.data.title}
+          status={quote.status}
+        />
+      ))}
+    </div>
+  </section>
+</BaseLayout>

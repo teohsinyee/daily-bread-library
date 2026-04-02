@@ -1,0 +1,42 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import type { SiteLocale } from "../../../config/site";
+import { withBase } from "../../../config/site";
+import { getSermonsByLocale, getThemeGroups } from "../../../lib/content";
+
+export async function getStaticPaths() {
+  return [
+    { params: { locale: "en" } },
+    { params: { locale: "zh" } }
+  ];
+}
+
+const locale = Astro.params.locale as SiteLocale;
+const sermons = await getSermonsByLocale(locale);
+const topics = getThemeGroups(sermons);
+---
+
+<BaseLayout
+  title={locale === "zh" ? "主题" : "Topics"}
+  description={locale === "zh" ? "按主题阅读讲章与反思。" : "Browse sermons and reflections by theme."}
+  locale={locale}
+>
+  <section class="page-intro">
+    <p class="eyebrow">{locale === "zh" ? "主题索引" : "Topic Index"}</p>
+    <h1>{locale === "zh" ? "从主题进入粮仓" : "Enter the library by theme"}</h1>
+    <p>
+      {locale === "zh"
+        ? "主题页帮助人把同类负担聚在一起阅读。"
+        : "Topic pages gather messages with a shared burden so visitors can follow a thread, not only a timeline."}
+    </p>
+  </section>
+
+  <div class="grid grid--three">
+    {topics.map((topic) => (
+      <a class="card topic-card" href={withBase(`/${locale}/topics/${topic.slug}/`)}>
+        <strong>{topic.label}</strong>
+        <span>{topic.count} {locale === "zh" ? "篇信息" : topic.count === 1 ? "sermon" : "sermons"}</span>
+      </a>
+    ))}
+  </div>
+</BaseLayout>

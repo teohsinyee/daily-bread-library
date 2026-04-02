@@ -1,0 +1,57 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import SermonCard from "../../../components/SermonCard.astro";
+import type { SiteLocale } from "../../../config/site";
+import { getSermonsByLocale, getThemeGroups, type SermonEntry } from "../../../lib/content";
+
+type ThemeGroup = ReturnType<typeof getThemeGroups>[number];
+
+export async function getStaticPaths() {
+  const paths = [];
+
+  for (const locale of ["en", "zh"] as const) {
+    const sermons = await getSermonsByLocale(locale);
+    const themes = getThemeGroups(sermons);
+
+    for (const theme of themes) {
+      paths.push({
+        params: {
+          locale,
+          theme: theme.slug
+        },
+        props: {
+          locale,
+          theme
+        }
+      });
+    }
+  }
+
+  return paths;
+}
+
+const { locale, theme } = Astro.props as {
+  locale: SiteLocale;
+  theme: ThemeGroup;
+};
+---
+
+<BaseLayout
+  title={theme.label}
+  description={locale === "zh" ? `围绕 ${theme.label} 的讲章与反思。` : `Sermons and reflections around ${theme.label}.`}
+  locale={locale}
+>
+  <section class="page-intro">
+    <p class="eyebrow">{locale === "zh" ? "主题" : "Topic"}</p>
+    <h1>{theme.label}</h1>
+    <p>
+      {locale === "zh"
+        ? `这里聚合 ${theme.label} 相关的讲章与回应。`
+        : `This page gathers sermons and reflections related to ${theme.label}.`}
+    </p>
+  </section>
+
+  <div class="grid grid--two">
+    {theme.entries.map((sermon: SermonEntry) => <SermonCard sermon={sermon} />)}
+  </div>
+</BaseLayout>

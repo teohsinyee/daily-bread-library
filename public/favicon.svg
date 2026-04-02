@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title>Daily Bread Library</title>
+  <rect width="64" height="64" rx="14" fill="#f7f0e2" />
+  <path d="M17 31c0-8 6-14 15-14s15 6 15 14v8c0 5-4 8-8 8H25c-4 0-8-3-8-8z" fill="#c46d3d"/>
+  <path d="M22 26c1 0 2 1 2 2s-1 2-2 2-2-1-2-2 1-2 2-2zm10-3c1 0 2 1 2 2s-1 2-2 2-2-1-2-2 1-2 2-2zm10 3c1 0 2 1 2 2s-1 2-2 2-2-1-2-2 1-2 2-2z" fill="#f2c28b"/>
+  <path d="M32 13c4 4 7 7 7 11a7 7 0 0 1-14 0c0-4 3-7 7-11z" fill="#d8a84b"/>
+</svg>

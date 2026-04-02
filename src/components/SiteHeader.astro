@@ -1,0 +1,52 @@
+---
+interface Props {
+  locale: "en" | "zh";
+}
+
+const { locale } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const labels = {
+  en: {
+    home: "Home",
+    sermons: "Sermons",
+    topics: "Topics",
+    quotes: "Quotes",
+    chinese: "中文"
+  },
+  zh: {
+    home: "首页",
+    sermons: "讲章",
+    topics: "主题",
+    quotes: "金句",
+    chinese: "English"
+  }
+} as const;
+---
+
+<header class="site-header">
+  <div class="site-header__inner">
+    <a class="brand" href={`${base}${locale}/`}>
+      <span class="brand__mark">DB</span>
+      <span class="brand__text">
+        <strong>Daily Bread Library</strong>
+        <small>{locale === "zh" ? "属灵粮仓" : "Christian knowledge base"}</small>
+      </span>
+    </a>
+
+    <nav class="site-nav" aria-label="Primary">
+      <a href={`${base}${locale}/`}>{labels[locale].home}</a>
+      <a href={`${base}${locale}/sermons/`}>{labels[locale].sermons}</a>
+      <a href={`${base}${locale}/topics/`}>{labels[locale].topics}</a>
+      <a href={`${base}${locale}/quotes/`}>{labels[locale].quotes}</a>
+    </nav>
+
+    <div class="locale-switcher" aria-label="Languages">
+      <a
+        href={`${base}${locale === "zh" ? "en" : "zh"}/`}
+        class="locale-switcher__link"
+      >
+        {labels[locale].chinese}
+      </a>
+    </div>
+  </div>
+</header>

@@ -1,0 +1,23 @@
+---
+interface Props {
+  text: string;
+  note?: string;
+  href: string;
+  speaker: string;
+  sermonTitle: string;
+  status: "exact" | "cleaned" | "paraphrase";
+}
+
+const { text, note, href, speaker, sermonTitle, status } = Astro.props;
+---
+
+<article class="card card--quote">
+  <p class="quote-mark">“</p>
+  <blockquote>{text}</blockquote>
+  {note && <p class="muted">{note}</p>}
+  <p class="quote-meta">
+    <span>{speaker}</span>
+    <span>{status}</span>
+  </p>
+  <a class="text-link" href={href}>{sermonTitle}</a>
+</article>
